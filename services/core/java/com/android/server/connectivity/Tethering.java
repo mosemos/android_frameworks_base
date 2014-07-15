@@ -43,7 +43,10 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+<<<<<<< HEAD
 import android.os.SystemProperties;
+=======
+>>>>>>> c764488... Tethering: IPV6 tethering support
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
@@ -774,7 +777,11 @@ public class Tethering extends BaseNetworkObserver {
                         ConnectivityManager.EXTRA_NETWORK_INFO);
                 if (networkInfo != null &&
                         networkInfo.getDetailedState() != NetworkInfo.DetailedState.FAILED) {
+<<<<<<< HEAD
                     if (VDBG) Log.d(TAG, "Tethering got CONNECTIVITY_ACTION_IMMEDIATE");
+=======
+                    if (VDBG) Log.d(TAG, "Tethering got CONNECTIVITY_ACTION");
+>>>>>>> c764488... Tethering: IPV6 tethering support
                     mTetherMasterSM.sendMessage(TetherMasterSM.CMD_UPSTREAM_CHANGED, networkInfo);
                 }
             } else if (action.equals(Intent.ACTION_CONFIGURATION_CHANGED)) {
@@ -1563,10 +1570,13 @@ public class Tethering extends BaseNetworkObserver {
                 Log.d(TAG, "adding v6 interface " + iface);
                 try {
                     service.addUpstreamV6Interface(iface);
+<<<<<<< HEAD
                     for (TetherInterfaceSM sm : mNotifyList) {
                         sendUpstreamIfaceChangeBroadcast( iface, sm.getTethered(), AF_INET6,
                                 UpstreamInfoUpdateType.UPSTREAM_IFACE_ADDED);
                     }
+=======
+>>>>>>> c764488... Tethering: IPV6 tethering support
                 } catch (RemoteException e) {
                     Log.e(TAG, "Unable to append v6 upstream interface");
                 }
@@ -1579,10 +1589,13 @@ public class Tethering extends BaseNetworkObserver {
                 Log.d(TAG, "removing v6 interface " + iface);
                 try {
                     service.removeUpstreamV6Interface(iface);
+<<<<<<< HEAD
                     for (TetherInterfaceSM sm : mNotifyList) {
                         sendUpstreamIfaceChangeBroadcast( iface, sm.getTethered(), AF_INET6,
                                 UpstreamInfoUpdateType.UPSTREAM_IFACE_REMOVED);
                     }
+=======
+>>>>>>> c764488... Tethering: IPV6 tethering support
                 } catch (RemoteException e) {
                     Log.e(TAG, "Unable to remove v6 upstream interface");
                 }
