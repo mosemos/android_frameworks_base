@@ -5552,13 +5552,7 @@ public final class Settings {
          * @hide
          */
         public static final String PRIVACY_GUARD_DEFAULT = "privacy_guard_default";
-         
-         /**
-         * Whether to use the custom quick unlock screen control
-         * @hide
-         */
-        public static final String LOCKSCREEN_QUICK_UNLOCK_CONTROL = "lockscreen_quick_unlock_control";
-        
+
         /**
          * Whether to include options in power menu for rebooting into recovery or bootloader
          * @hide
@@ -5626,7 +5620,6 @@ public final class Settings {
             SLEEP_TIMEOUT,
             PRIVACY_GUARD_DEFAULT,
             ADVANCED_REBOOT,
-            LOCKSCREEN_QUICK_UNLOCK_CONTROL,
             DEVELOPMENT_SHORTCUT
         };
 
