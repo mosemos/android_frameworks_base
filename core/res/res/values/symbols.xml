@@ -2232,11 +2232,8 @@
   <!-- Package Manager -->
   <java-symbol type="array" name="config_disabledComponents" />
 
-<<<<<<< HEAD
   <!-- Last app switch animations -->
   <java-symbol type="anim" name="last_app_in" />
   <java-symbol type="anim" name="last_app_out" />
 
-=======
->>>>>>> f12ac04... PackageManager: allow build-time disabling of components
 </resources>
