@@ -26,6 +26,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
+import android.net.IConnectivityManager;
 import android.net.INetworkStatsService;
 import android.net.InterfaceConfiguration;
 import android.net.LinkAddress;
@@ -36,18 +37,16 @@ import android.net.NetworkUtils;
 import android.net.RouteInfo;
 import android.net.wifi.WifiDevice;
 import android.os.Binder;
+import android.os.IBinder;
 import android.os.INetworkManagementService;
 import android.os.Looper;
 import android.os.Message;
 import android.os.RemoteException;
-<<<<<<< HEAD
 import android.os.ServiceManager;
 <<<<<<< HEAD
 import android.os.SystemProperties;
 =======
 >>>>>>> c764488... Tethering: IPV6 tethering support
-=======
->>>>>>> parent of c764488... Tethering: IPV6 tethering support
 import android.os.UserHandle;
 import android.provider.Settings;
 import android.util.Log;
@@ -782,12 +781,8 @@ public class Tethering extends BaseNetworkObserver {
                     if (VDBG) Log.d(TAG, "Tethering got CONNECTIVITY_ACTION_IMMEDIATE");
 =======
                     if (VDBG) Log.d(TAG, "Tethering got CONNECTIVITY_ACTION");
-<<<<<<< HEAD
 >>>>>>> c764488... Tethering: IPV6 tethering support
                     mTetherMasterSM.sendMessage(TetherMasterSM.CMD_UPSTREAM_CHANGED, networkInfo);
-=======
-                    mTetherMasterSM.sendMessage(TetherMasterSM.CMD_UPSTREAM_CHANGED);
->>>>>>> parent of c764488... Tethering: IPV6 tethering support
                 }
             } else if (action.equals(Intent.ACTION_CONFIGURATION_CHANGED)) {
                 updateConfiguration();
@@ -945,10 +940,14 @@ public class Tethering extends BaseNetworkObserver {
                         mUpstreamIfaceTypes.add(HIPRI_TYPE);
                     }
                 }
-            }
-            if (mUpstreamIfaceTypes.contains(DUN_TYPE)) {
-                mPreferredUpstreamMobileApn = ConnectivityManager.TYPE_MOBILE_DUN;
+                /* if DUN is still available, make that a priority */
+                if (mUpstreamIfaceTypes.contains(DUN_TYPE)) {
+                    mPreferredUpstreamMobileApn = ConnectivityManager.TYPE_MOBILE_DUN;
+                } else {
+                    mPreferredUpstreamMobileApn = ConnectivityManager.TYPE_MOBILE_HIPRI;
+                }
             } else {
+                /* dun_required is not set, fall back to HIPRI in that case */
                 mPreferredUpstreamMobileApn = ConnectivityManager.TYPE_MOBILE_HIPRI;
             }
         }
@@ -1564,7 +1563,6 @@ public class Tethering extends BaseNetworkObserver {
                 return true;
             }
 
-<<<<<<< HEAD
             protected void addUpstreamV6Interface(String iface) {
                 IBinder b = ServiceManager.getService(Context.NETWORKMANAGEMENT_SERVICE);
                 INetworkManagementService service = INetworkManagementService.Stub.asInterface(b);
@@ -1624,9 +1622,9 @@ public class Tethering extends BaseNetworkObserver {
                 return ret;
             }
 
-=======
->>>>>>> parent of c764488... Tethering: IPV6 tethering support
             protected void chooseUpstreamType(boolean tryCell) {
+                IBinder b = ServiceManager.getService(Context.CONNECTIVITY_SERVICE);
+                IConnectivityManager cm = IConnectivityManager.Stub.asInterface(b);
                 int upType = ConnectivityManager.TYPE_NONE;
                 String iface = null;
 
@@ -1641,10 +1639,21 @@ public class Tethering extends BaseNetworkObserver {
                     }
 
                     for (Integer netType : mUpstreamIfaceTypes) {
-                        NetworkInfo info =
-                                getConnectivityManager().getNetworkInfo(netType.intValue());
+                        NetworkInfo info = null;
+                        LinkProperties props = null;
+                        boolean isV6Connected = false;
+                        try {
+                            info = cm.getNetworkInfo(netType.intValue());
+                            if (info != null) {
+                                props = cm.getLinkPropertiesForType(info.getType());
+                                isV6Connected = isIpv6Connected(cm, props);
+                            }
+                        } catch (RemoteException e) { }
                         if ((info != null) && info.isConnected()) {
                             upType = netType.intValue();
+                            if (isV6Connected) {
+                                addUpstreamV6Interface(props.getInterfaceName());
+                            }
                             break;
                         }
                     }
@@ -1824,8 +1833,19 @@ public class Tethering extends BaseNetworkObserver {
                     case CMD_UPSTREAM_CHANGED:
                         if(VDBG) Log.d(TAG, "CMD_UPSTREAM_CHANGED event received");
                         // need to try DUN immediately if Wifi goes down
+                        NetworkInfo info = (NetworkInfo) message.obj;
                         mTryCell = !WAIT_FOR_NETWORK_TO_SETTLE;
                         chooseUpstreamType(mTryCell);
+                        if ((info != null) && (!info.isConnected())) {
+                            IBinder b = ServiceManager.getService(Context.CONNECTIVITY_SERVICE);
+                            IConnectivityManager cm = IConnectivityManager.Stub.asInterface(b);
+                            try {
+                                LinkProperties props = cm.getLinkPropertiesForType(info.getType());
+                                removeUpstreamV6Interface(props.getInterfaceName());
+                            } catch(RemoteException e) {
+                                Log.e(TAG, "Exception querying ConnectivityManager", e);
+                            }
+                        }
                         mTryCell = !mTryCell;
                         break;
                     case CMD_CELL_CONNECTION_RENEW:
