@@ -2126,40 +2126,7 @@ status_t OpenGLRenderer::drawBitmapMesh(const SkBitmap* bitmap, int meshWidth, i
             bottom = fmaxf(bottom, vertices[y]);
 
             ColorTextureVertex::set(vertex++, vertices[x], vertices[y], u, v, colors[x/2]);
-<<<<<<< HEAD
         }
-    }
-
-    // Set index order from mesh's bottom to up, So that
-    // construct the same triangle mesh with original implementation.
-    // Or, May result in diffrent interpolated color.
-    //
-    // For each row, add degenerate triangle for triangle strip
-    // Take below for example:
-    // v00 --- v01 --- v02 --- v03
-    //  |  ...  |  ...  |  ...  |
-    // v10 --- v11 --- v12 --- v13
-    //  |  ...  |  ...  |  ...  |
-    // v20 --- v21 --- v22 --- v23
-    // Indices are: v20, v20, v10, v21, v11, v22, v12, v23, v13, v13,
-    //              v10, v10, v00, v11, v01, v12, v02, v13, v03, v03
-    uint32_t indexCount = meshHeight * (meshWidth * 2 + 4);
-    uint16_t indices[indexCount];
-    uint32_t currVertexRow = meshHeight;
-    uint32_t index = 0;
-    while (currVertexRow > 0) {
-        uint32_t upVertexRow = currVertexRow - 1;
-        indices[index++] = currVertexRow * vertexCountWidth;
-        indices[index++] = currVertexRow * vertexCountWidth;
-        indices[index++] = upVertexRow * vertexCountWidth;
-        for (int i = 1; i <= meshWidth; i++) {
-            indices[index++] = currVertexRow * vertexCountWidth + i;
-            indices[index++] = upVertexRow * vertexCountWidth + i;
-=======
->>>>>>> aefb609... Optimize drawBitmapMesh using TRIANGLE_STRIP
-        }
-        indices[index++] = upVertexRow * vertexCountWidth + meshWidth;
-        currVertexRow--;
     }
 
     // Set index order from mesh's bottom to up, So that
